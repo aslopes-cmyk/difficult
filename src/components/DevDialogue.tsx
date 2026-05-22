@@ -39,18 +39,18 @@ export const DevDialogue: React.FC<DevDialogueProps> = ({ onComplete }) => {
   const isLast = step === DIALOGUE.length - 1;
 
   return (
-    <div className="absolute inset-0 z-50 flex flex-col justify-end font-mono select-none">
+    <div className="absolute inset-0 z-50 flex flex-col justify-end font-mono select-none overflow-hidden">
       {/* Dark cinematic overlay */}
       <div className="absolute inset-0 bg-slate-950/80" />
 
       {/* Letterbox bars */}
-      <div className="absolute top-0 left-0 right-0 h-8 bg-black/80" />
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-black/80" />
+      <div className="absolute top-0 left-0 right-0 h-6 bg-black/80" />
+      <div className="absolute bottom-0 left-0 right-0 h-6 bg-black/80" />
 
       {/* Dialogue box */}
-      <div className="relative z-10 m-3 mb-10 flex flex-col gap-2">
+      <div className="relative z-10 m-2 mb-8 flex flex-col gap-2">
         {/* Characters + bubble row */}
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-1.5 min-w-0">
           {/* Dev portrait */}
           <div className={`flex flex-col items-center gap-0.5 shrink-0 transition-opacity duration-200 ${isDev ? 'opacity-100' : 'opacity-35'}`}>
             <div className={`w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-xl border-2 transition-colors duration-200 ${isDev ? 'border-emerald-500' : 'border-slate-700'}`}>
@@ -60,12 +60,12 @@ export const DevDialogue: React.FC<DevDialogueProps> = ({ onComplete }) => {
           </div>
 
           {/* Speech bubble */}
-          <div className="flex-1 bg-slate-900/97 border border-slate-600 rounded-xl p-2.5 relative">
+          <div className="flex-1 min-w-0 bg-slate-900/97 border border-slate-600 rounded-xl p-2 relative">
             {/* Speaker label */}
             <div className={`text-[9px] font-extrabold mb-1 tracking-wider ${isDev ? 'text-emerald-400' : 'text-blue-400'}`}>
               {isDev ? '[ Dev ]' : '[ Gato ]'}
             </div>
-            <p className="text-[11px] text-slate-200 leading-relaxed">
+            <p className="text-[10px] text-slate-200 leading-relaxed break-words">
               {entry.text}
             </p>
           </div>

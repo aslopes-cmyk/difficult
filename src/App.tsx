@@ -89,19 +89,11 @@ export default function App() {
 
   const toggleFullscreen = () => {
     soundEffects.playUnlock();
-    setIsFullscreen(prev => {
-      const next = !prev;
-      if (next) {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen().catch(() => {});
-        }
-      } else {
-        if (document.fullscreenElement && document.exitFullscreen) {
-          document.exitFullscreen().catch(() => {});
-        }
-      }
-      return next;
-    });
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    }
   };
 
   // Deceptive Death Prompt overlays

@@ -60,7 +60,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
       </div>
 
       {/* Main title */}
-      <h1 className="text-5xl md:text-7xl font-black tracking-[0.18em] text-rose-500 mb-1 drop-shadow-[0_0_24px_rgba(239,68,68,0.4)] select-none">
+      <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-[0.12em] sm:tracking-[0.18em] text-rose-500 mb-1 drop-shadow-[0_0_24px_rgba(239,68,68,0.4)] select-none">
         D.I.F.F.I.C.U.L.T
       </h1>
 
