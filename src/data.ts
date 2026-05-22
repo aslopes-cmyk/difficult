@@ -393,7 +393,7 @@ export const LEVELS: LevelConfig[] = [
   },
   {
     id: 7,
-    name: 'Anúncio Gigante',
+    name: 'Teto Inevitável',
     subtitle: 'Uma fase impossível... ou será que não?',
     hint: 'Após a segunda morte, um misterioso personagem aparece para ajudar. Resista e preste atenção ao diálogo!',
     hintCost: 60,
@@ -406,11 +406,24 @@ export const LEVELS: LevelConfig[] = [
       { id: 'l7_floor', x: 0, y: 390, width: 800, height: 60, type: 'normal', state: 'stable', origY: 390 }
     ],
     traps: [
-      // Ceiling spike strips — always visible, always lethal if player jumps too high
-      { id: 'l7_ceil1', type: 'moving-spike', x: 90, y: 40, width: 130, height: 28, origX: 90, origY: 40, state: 'active', visible: true, color: '#ef4444' },
-      { id: 'l7_ceil2', type: 'moving-spike', x: 340, y: 68, width: 90, height: 24, origX: 340, origY: 68, state: 'active', visible: true, color: '#dc2626' },
-      { id: 'l7_ceil3', type: 'moving-spike', x: 590, y: 42, width: 140, height: 28, origX: 590, origY: 42, state: 'active', visible: true, color: '#ef4444' },
-      // Floor pop-up spikes — fast, triggered when player walks past
+      // Full-width ceiling spike — triggers immediately, no escape
+      {
+        id: 'l7_ceil_main',
+        type: 'falling-spike',
+        x: 0,
+        y: 0,
+        width: 790,
+        height: 32,
+        origX: 0,
+        origY: 0,
+        targetY: 356,
+        state: 'idle',
+        visible: true,
+        triggerBox: { x: 120, y: 0, width: 680, height: 450 },
+        speed: 10,
+        color: '#ef4444'
+      },
+      // Floor pop-up spikes
       {
         id: 'l7_fspike1',
         type: 'up-spike',
@@ -423,72 +436,24 @@ export const LEVELS: LevelConfig[] = [
         targetY: 360,
         state: 'idle',
         visible: false,
-        triggerBox: { x: 150, y: 0, width: 180, height: 450 },
+        triggerBox: { x: 120, y: 0, width: 200, height: 450 },
         speed: 28,
-        color: '#ef4444'
+        color: '#dc2626'
       },
       {
         id: 'l7_fspike2',
         type: 'up-spike',
-        x: 520,
+        x: 480,
         y: 420,
         width: 80,
         height: 25,
-        origX: 520,
+        origX: 480,
         origY: 420,
         targetY: 360,
         state: 'idle',
         visible: false,
-        triggerBox: { x: 480, y: 0, width: 220, height: 450 },
+        triggerBox: { x: 400, y: 0, width: 250, height: 450 },
         speed: 28,
-        color: '#f43f5e'
-      },
-      // Falling spike from ceiling near the door
-      {
-        id: 'l7_drop1',
-        type: 'falling-spike',
-        x: 620,
-        y: 0,
-        width: 80,
-        height: 28,
-        origX: 620,
-        origY: 0,
-        targetY: 200,
-        state: 'idle',
-        visible: true,
-        triggerBox: { x: 580, y: 0, width: 140, height: 450 },
-        speed: 14,
-        color: '#dc2626'
-      },
-      // Ad popup wall blocking the path
-      {
-        id: 'l7_ad_wall',
-        type: 'ad-physical-popup',
-        x: 400,
-        y: 190,
-        width: 180,
-        height: 200,
-        origX: 400,
-        origY: 190,
-        state: 'idle',
-        visible: false,
-        triggerBox: { x: 280, y: 0, width: 80, height: 450 },
-        color: '#0284c7'
-      },
-      // Fast homing missile from the right
-      {
-        id: 'l7_x_missile',
-        type: 'flying-arrow',
-        x: 820,
-        y: 355,
-        width: 30,
-        height: 15,
-        origX: 820,
-        origY: 355,
-        targetX: 100,
-        state: 'idle',
-        visible: false,
-        speed: 14,
         color: '#f43f5e'
       }
     ],

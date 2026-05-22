@@ -69,9 +69,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Inputs
   const keysRef = useRef<{ [key: string]: boolean }>({});
 
-  // Level 7 death tracking for Dev dialogue trigger
+  // Level 7: counts deaths to trigger Dev dialogue on the 2nd
   const level7DeathCountRef = useRef(0);
   const prevLevelIdRef = useRef(level.id);
+
+  // FPS counter for performance diagnostics
+  const fpsRef = useRef(0);
+  const fpsFrameCountRef = useRef(0);
+  const fpsLastTimeRef = useRef(performance.now());
 
   // Visual effects
   const particlesRef = useRef<Particle[]>([]);
@@ -212,12 +217,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     createSparks(p.x + p.width / 2, p.y + p.height / 2, '#ef4444', 20);
     soundEffects.playDeath();
 
-    // Level 7: trigger Dev dialogue on the 2nd death (only when hole not yet shown)
+    // Level 7: trigger Dev dialogue on the 2nd death
     if (level.id === 7 && onDevDialogue && !escapeHoleActive) {
       level7DeathCountRef.current++;
       if (level7DeathCountRef.current >= 2) {
         onDevDialogue();
-        return; // Skip normal death prompt — dialogue handler triggers reset
+        return;
       }
     }
 
@@ -241,6 +246,15 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       if (isPaused) {
         animationFrameId = requestAnimationFrame(gameLoop);
         return;
+      }
+
+      // FPS counter
+      fpsFrameCountRef.current++;
+      const now = performance.now();
+      if (now - fpsLastTimeRef.current >= 1000) {
+        fpsRef.current = fpsFrameCountRef.current;
+        fpsFrameCountRef.current = 0;
+        fpsLastTimeRef.current = now;
       }
 
       // 1. Inputs Check (Keyboard + Virtual Controls)
@@ -504,6 +518,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
         // --- 6. Traps Trigger & Updates ---
         traps.forEach((trap) => {
+          // When escape hole is active on Level 7, freeze the ceiling spike in place
+          if (escapeHoleActive && level.id === 7 && trap.id === 'l7_ceil_main') return;
+
           // Check player proximity to trigger trap
           if (trap.state === 'idle' && trap.triggerBox) {
             const tBox = trap.triggerBox;
@@ -545,6 +562,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                     otherTrap.visible = true;
                   }
                 });
+
               }
               else if (trap.type === 'fleeing-door') {
                 // Shift door's goal
@@ -775,9 +793,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           if (checkCollides(p.x, p.y, p.width, p.height, holeX, holeY, holeW, holeH)) {
             // Teleport player above exit door
             p.x = level.doorX + 10;
-            p.y = level.doorY - 80;
+            p.y = level.doorY - 200;
             p.vx = 0;
-            p.vy = 2; // gentle fall toward door
+            p.vy = 0;
             createSparks(holeX + holeW / 2, holeY + holeH / 2, '#a855f7', 20);
             createSparks(p.x + p.width / 2, p.y + p.height / 2, '#fbbf24', 18);
             spawnFloatingText(p.x - 10, p.y - 20, 'TELEPORTADO! 🌀', '#a855f7');
@@ -869,8 +887,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       if (!ctx) return;
 
       ctx.save();
-      // Scale virtual 800x450 coordinate system to 1600x900 backing store
-      ctx.scale(2, 2);
       // Apply Screen Shake Translation
       ctx.translate(screenShakeRef.current.x, screenShakeRef.current.y);
 
@@ -882,22 +898,20 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-      // Draw subtle background matrix grid lines
+      // Draw subtle background matrix grid lines (single batched stroke call)
       ctx.strokeStyle = '#33415555';
       ctx.lineWidth = 1;
+      ctx.beginPath();
       const gridSize = 40;
       for (let sx = 0; sx < CANVAS_WIDTH; sx += gridSize) {
-        ctx.beginPath();
         ctx.moveTo(sx, 0);
         ctx.lineTo(sx, CANVAS_HEIGHT);
-        ctx.stroke();
       }
       for (let sy = 0; sy < CANVAS_HEIGHT; sy += gridSize) {
-        ctx.beginPath();
         ctx.moveTo(0, sy);
         ctx.lineTo(CANVAS_WIDTH, sy);
-        ctx.stroke();
       }
+      ctx.stroke();
 
       // B. Draw Static Paths/Platforms
       platforms.forEach((plat) => {
@@ -976,8 +990,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Draw standard glowing base
       const doorPulse = Math.sin(Date.now() / 200) * 4;
       ctx.fillStyle = '#eab30833'; // transparent golden yellow
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = '#fbbf24';
 
       // Draw Arch representation
       ctx.beginPath();
@@ -1025,8 +1037,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
         // Gold coin circle
         ctx.fillStyle = '#fbbf24';
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = '#fbbf24';
         ctx.beginPath();
         ctx.arc(0, 0, 7, 0, Math.PI * 2);
         ctx.fill();
@@ -1057,8 +1067,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           ctx.strokeStyle = '#020617';
           ctx.lineWidth = 1;
           ctx.fillStyle = '#fbbf24'; // bright yellow
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#eab308';
           
           // Feather wing shape
           ctx.beginPath();
@@ -1086,8 +1094,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           ctx.fillStyle = '#4ade80'; // bright green
           ctx.strokeStyle = '#020617';
           ctx.lineWidth = 1.2;
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#22c55e';
 
           ctx.fillRect(-6, -2, 12, 11);
           ctx.strokeRect(-6, -2, 12, 11);
@@ -1110,8 +1116,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           ctx.fillStyle = '#fb7185'; // hot rose pink
           ctx.strokeStyle = '#020617';
           ctx.lineWidth = 1;
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#ec4899';
 
           ctx.beginPath();
           ctx.moveTo(3, -11);
@@ -1144,6 +1148,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
         // Custom renderer based on trap structures
         if (trap.type === 'moving-spike' || trap.type === 'up-spike' || trap.type === 'falling-spike') {
+          // Hide ceiling spike on Level 7 when escape hole is active
+          if (escapeHoleActive && level.id === 7 && trap.id === 'l7_ceil_main') return;
+
           // Draw multiple sharp triangles
           const numSpikes = Math.max(1, Math.floor(trap.width / 14));
           const actualSpikeW = trap.width / numSpikes;
@@ -1156,14 +1163,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             const sx = trap.x + (i * actualSpikeW);
             ctx.beginPath();
 
-            // Check if spikes point UP or DOWN (ceiling)
             if (trap.type === 'falling-spike' || trap.origY < 100) {
-              // Hangs from ceiling
               ctx.moveTo(sx, trap.y);
               ctx.lineTo(sx + actualSpikeW / 2, trap.y + trap.height);
               ctx.lineTo(sx + actualSpikeW, trap.y);
             } else {
-              // Points upwards from floor
               ctx.moveTo(sx, trap.y + trap.height);
               ctx.lineTo(sx + actualSpikeW / 2, trap.y);
               ctx.lineTo(sx + actualSpikeW, trap.y + trap.height);
@@ -1200,12 +1204,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
           // Angry robot eyes on pillar
           ctx.fillStyle = '#ef4444';
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = '#ef4444';
           // Angry red lines
           ctx.fillRect(trap.x + 20, trap.y + trap.height - 40, 12, 5);
           ctx.fillRect(trap.x + trap.width - 32, trap.y + trap.height - 40, 12, 5);
-          ctx.shadowBlur = 0;
         }
         else if (trap.type === 'flying-arrow') {
           // Render visual horizontal arrow projectile
@@ -1314,8 +1315,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           ctx.rotate(spin);
 
           ctx.fillStyle = trap.color || '#fbbf24';
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#fbbf24';
 
           // Ring head
           ctx.beginPath();
@@ -1342,38 +1341,40 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         const pulse = Math.sin(Date.now() / 130) * 0.25 + 0.75;
 
         ctx.save();
+
         // Dark void ellipse
         ctx.fillStyle = '#000000';
         ctx.beginPath();
         ctx.ellipse(cx, cy, holeW / 2, holeH / 2, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Purple glowing ring
-        ctx.strokeStyle = `rgba(168, 85, 247, ${pulse})`;
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 16;
-        ctx.shadowColor = '#a855f7';
+        // Outer glow ring — faked with two strokes of decreasing alpha (no shadowBlur)
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, holeW / 2 + 4, holeH / 2 + 3, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(168, 85, 247, ${pulse * 0.35})`;
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
         ctx.beginPath();
         ctx.ellipse(cx, cy, holeW / 2, holeH / 2, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(168, 85, 247, ${pulse})`;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Inner swirl
-        ctx.strokeStyle = `rgba(216, 180, 254, ${pulse * 0.6})`;
-        ctx.lineWidth = 1.5;
-        ctx.shadowBlur = 6;
+        // Inner swirl (no shadow)
         ctx.beginPath();
         ctx.ellipse(cx, cy, holeW / 4, holeH / 4, Date.now() / 800, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(216, 180, 254, ${pulse * 0.6})`;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
-        ctx.shadowBlur = 0;
 
-        // Label above
+        // Label above (no shadow)
         ctx.fillStyle = `rgba(216, 180, 254, ${pulse})`;
         ctx.font = 'bold 9px monospace';
         ctx.textAlign = 'center';
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = '#a855f7';
         ctx.fillText('⬇ PULE AQUI!', cx, holeY - 6);
         ctx.textAlign = 'left';
+
         ctx.restore();
       }
 
@@ -1650,8 +1651,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.globalAlpha = t.alpha;
         ctx.fillStyle = t.color;
         ctx.font = 'bold 11px monospace';
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = '#000000';
         ctx.fillText(t.text, t.x, t.y);
         ctx.restore();
       });
@@ -1688,6 +1687,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.restore();
       }
 
+      // FPS display (top-right corner)
+      ctx.fillStyle = fpsRef.current < 50 ? '#ef4444' : '#22c55e';
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${fpsRef.current} fps`, CANVAS_WIDTH - 6, 14);
+      ctx.textAlign = 'left';
+
       ctx.restore(); // Undo Translate screen shake
     };
 
@@ -1710,8 +1716,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       <canvas
         id="level-devil-stage"
         ref={canvasRef}
-        width={1600}
-        height={900}
+        width={800}
+        height={450}
         className="w-full h-full max-w-full max-h-full aspect-[16/9] block object-contain select-none bg-slate-900"
       />
     </div>
