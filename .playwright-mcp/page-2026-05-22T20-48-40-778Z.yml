@@ -1,0 +1,18 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - text: =^.^=
+    - generic [ref=e5]: ~
+  - heading "D.I.F.F.I.C.U.L.T" [level=1] [ref=e6]
+  - generic [ref=e7]:
+    - paragraph [ref=e8]: Daring
+    - paragraph [ref=e9]: Incredible
+    - paragraph [ref=e10]: Furry
+    - paragraph [ref=e11]: Feline
+    - paragraph [ref=e12]: In
+    - paragraph [ref=e13]: Catastrophic
+    - paragraph [ref=e14]: Underworld
+    - paragraph [ref=e15]: Levels
+    - paragraph [ref=e16]: Trials
+  - button "▶ START" [ref=e17] [cursor=pointer]
+  - paragraph [ref=e18]: A / D · ← / → para mover · W / SPACE para pular
+  - paragraph [ref=e19]: DECEPTIVE LEVEL PLATFORMER © 2026

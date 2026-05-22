@@ -1,0 +1,6 @@
+{
+  "name": "Deceptive Level Platformer",
+  "description": "An addictive, retro-inspired 2D physics platformer with deceptive level designs, comical traps, physics-based puzzles, custom skins, and funny mock ad trolling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
